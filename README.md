@@ -1,3 +1,3 @@
 # AKBTmap
-our project\n
-author by Timmy Bruce Katherine
+our project
+Author by Timmy Bruce Katherine
