@@ -1,5 +1,9 @@
 package com.tom.mapexample;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -14,7 +18,9 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,11 +41,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     LocationRequest locationRequest;
+    Location location;
+    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -85,8 +94,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setZoomControlsEnabled(true);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney")
+                .snippet("雪梨"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+
         //台北101的位置
         LatLng taipei101 = new LatLng(25.033408, 121.564099);
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
@@ -96,6 +108,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .title("101")
 //                .icon(BitmapDescriptorFactory.fromResource(R.drawable.bubble2))
                 .snippet("這是台北101"));
+
 //        marker.showInfoWindow();
         mMap.setInfoWindowAdapter(
                 new GoogleMap.InfoWindowAdapter() {
@@ -126,9 +139,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .setMessage(marker.getSnippet())
                         .setPositiveButton("OK", null)
                         .show();
-                return true;
+                return false;
             }
         });
+
     }
 
     @Override
@@ -191,7 +205,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //noinspection MissingPermission
-        /*
+
         Location location = LocationServices.FusedLocationApi
                 .getLastLocation(mGoogleApiClient);
         if (location != null){
@@ -202,7 +216,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //noinspection MissingPermission
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, locationRequest, this);
-                */
+
     }
 
     @Override
@@ -224,5 +238,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new LatLng(location.getLatitude(), location.getLongitude())
                     , 15));
         }
+    }
+
+    void buttonOnClick(View view) {
+        Toast toast = Toast.makeText(this, "Add a new marker", Toast.LENGTH_SHORT);
+        toast.show();
+
+        LocationManager locationManager =
+                (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        // 設定標準為存取精確
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        // 向系統查詢最合適的服務提供者名稱 ( 通常也是 "gps")
+        String provider = locationManager.getBestProvider(criteria, true);
+        //noinspection MissingPermission
+        Location location = locationManager.getLastKnownLocation(provider);
+        if (location != null) {
+            LatLng Now = new LatLng(location.getLatitude(),location.getLongitude());
+            mMap.addMarker(new MarkerOptions()
+                    .position(Now)
+                    .title("Current Position"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(Now, 12));
+        }
+
     }
 }
